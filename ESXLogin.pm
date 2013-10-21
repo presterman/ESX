@@ -355,17 +355,15 @@ sub byte_length {
 
 =head1 NAME
 
-Sample - a sample script indicating the format of a single-file
-script upload to CPAN
+Retrieve properties of a VMware ESX server
 
 =head1 DESCRIPTION
 
-Login to VMWare ESX server and discover the Virtual Machines therein
+Login to VMWare ESX server and discover Host properties and the Virtual Machines therein
 
 =head1 README
 
-If there is any text in this section, it will be extracted into
-a separate README file.
+The ESX API uses SOAP to retrieve information and execute actions on an ESX server
 
 =head1 PREREQUISITES
 
@@ -379,7 +377,7 @@ any
 =pod SCRIPT CATEGORIES
 
 CPAN/Administrative
-Fun/Educational
+
 
 =cut
 
