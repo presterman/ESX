@@ -131,7 +131,7 @@ sub logout {
         	{$val= $faultval;}
       		else
       		{
-	      		$successval= $return->{'soapenv:Body'}->[0]->{'LoginResponse'}->[0]->{'returnval'};
+	      		$successval= $return->{'soapenv:Body'}->[0]->{'LogoutResponse'}->[0];
 	      			if($successval)
         		{  
 	        		$val= $successval;
@@ -154,7 +154,7 @@ sub logout {
       		
       		else
       		{
-	      		$successval= $return->{'soapenv:Body'}->{'LoginResponse'}->{'returnval'};
+	      		$successval= $return->{'soapenv:Body'}->{'LogoutResponse'}->{'returnval'};
 	      			if($successval)
         		{
 	       			    $val= $successval;
@@ -178,6 +178,8 @@ sub logout {
 	
 	
 }    
+
+
 sub discoverHost {
 	
 	 my $self= shift @_;
@@ -282,6 +284,75 @@ sub discoverVM    {
 	
 }
 
+sub getCurrentTime {
+	
+            my $self = shift;
+  	    my $body_content= "<_this type='ServiceInstance'>ServiceInstance</_this>";
+  	    my $request_envelope=$self->{soap_header}."<CurrentTime xmlns=\"urn:".$self->{namespace}."\">$body_content</CurrentTime>".$self->{soap_footer};
+	    my $xml=$self->_request($request_envelope);
+   	    my $val;  
+   	    if ($xml=~/^<\?xml/)
+   		  {
+		        my $xs = XML::Simple->new();
+		        my $return= $xs->XMLin($xml, ForceArray=>$self->{force_array},KeyAttr=>0);
+		        my $faultval;
+		        my $successval;
+        	if($self ->{force_array})
+           		{
+	         $faultval=$return->{'soapenv:Body'}->[0]->{'soapenv:Fault'}; #fault
+        
+       		if($faultval)
+        	{$val= $faultval;}
+      		else
+      		{
+	      		$successval= $return->{'soapenv:Body'}->[0]->{'CurrentTimeResponse'}->[0]->{'returnval'};
+	      			if($successval)
+        		{  
+	        		$val= $successval;
+        		}
+      			   else
+      		    { 
+	      		   $val= $xml;
+  			    }
+	      	}
+          }		
+      		
+      else
+        {
+	         $faultval=$return->{'soapenv:Body'}->{'soapenv:Fault'};;
+        
+       		if($faultval)
+        	{
+	            $val= $faultval;
+      		}
+      		
+      		else
+      		{
+	      		$successval= $return->{'soapenv:Body'}->{'CurrentTimeResponse'}->{'returnval'};
+	      			if($successval)
+        		{
+	       			    $val= $successval;
+      			}
+      			  else
+      			    {
+	      			    $val= $xml;
+	      			    
+      			    }
+            }
+	   }
+	   
+}
+   else
+   
+      {
+	   $val=$xml;   
+      }
+	return $val;
+	  
+	
+		
+	
+}
 
 
 
