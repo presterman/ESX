@@ -23,7 +23,7 @@ sub new   {
    $self->{soap_footer}='</soapenv:Body></soapenv:Envelope>';
    $self->{soap_action}='"urn:vim25/test"';
    $self->{namespace}="vim25";
-  bless($self,$class);
+   bless($self,$class);
   return $self;
   
  }
@@ -40,10 +40,18 @@ sub login {
     
   	  $self->{url}=$host;
 	  my $request_envelope=$self->{soap_header}."<Login xmlns=\"urn:".$self->{namespace}."\">$body_content</Login>".$self->{soap_footer};
-
+	  
+	  
+	  
+     #Configure for options
         if($$opts{force_array}) 
         {
 	        $self->{force_array}=1;
+	     }; 
+	     
+	       if($$opts{raw_xml}) 
+        {
+	        $self->{raw_xml}=1;
 	     }; 
         
    		  my $xml=$self->_request($request_envelope);
@@ -85,8 +93,8 @@ sub login {
       		
       		else
       		{
-	      		$successval= $return->{'soapenv:Body'}->{'LoginResponse'}->{'returnval'};
-	      			if($successval)
+	      	 	$successval= $return->{'soapenv:Body'}->{'LoginResponse'}->{'returnval'};
+	      	   	if($successval)
         		{
 	       			    $val= $successval;
       			}
@@ -131,8 +139,9 @@ sub logout {
         	{$val= $faultval;}
       		else
       		{
+	      		
 	      		$successval= $return->{'soapenv:Body'}->[0]->{'LogoutResponse'}->[0];
-	      			if($successval)
+	      		if($successval)
         		{  
 	        		$val= $successval;
         		}
@@ -154,7 +163,8 @@ sub logout {
       		
       		else
       		{
-	      		$successval= $return->{'soapenv:Body'}->{'LogoutResponse'}->{'returnval'};
+	      		  
+	      			$successval= $return->{'soapenv:Body'}->{'LogoutResponse'};
 	      			if($successval)
         		{
 	       			    $val= $successval;
@@ -178,8 +188,6 @@ sub logout {
 	
 	
 }    
-
-
 sub discoverHost {
 	
 	 my $self= shift @_;
@@ -188,6 +196,22 @@ sub discoverHost {
 	 my $body_content="<_this type='PropertyCollector'>ha-property-collector</_this><specSet><propSet><type>HostSystem</type><all>1</all></propSet><objectSet><obj type='HostSystem'>ha-host</obj></objectSet></specSet>";
 	 my $request_envelope=$self->{soap_header}."<RetrieveProperties xmlns=\"urn:".$self->{namespace}."\">$body_content</RetrieveProperties>".$self->{soap_footer};
 	 my $xml=$self->_request($request_envelope);
+
+
+	 if ($self->{raw_xml})
+	 
+	 {
+		 
+		 
+		  $val=$xml;
+		 
+       }
+
+
+ else
+ 
+   {	 
+	 	 
 	 my $xs = XML::Simple->new();
      my $return= $xs->XMLin($xml, ForceArray=>$self->{force_array},KeyAttr=>0);
      my $faultval;
@@ -220,7 +244,11 @@ sub discoverHost {
             }
 	   }
 	   
-	return $val;
+	
+	
+}	
+
+return $val;
 	
 	
 }
@@ -284,21 +312,55 @@ sub discoverVM    {
 	
 }
 
+
+sub suspendVM {
+
+	my $self, $id=shift
+	
+	 my $body_content= "<_this type='VirtualMachine'>$id</_this>";
+	 my $request_envelope=$self->{soap_header}."<SuspendVM_Task xmlns=\"urn:".$self->{namespace}."\">$body_content</SuspendVM_Task>".$self->{soap_footer};
+     
+}
+
+
+sub powerOnVM {
+	
+my $self, $id=shift
+	
+	 my $body_content= "<_this type='VirtualMachine'>$id</_this>";
+	 my $request_envelope=$self->{soap_header}."<PowerOnVM_Task xmlns=\"urn:".$self->{namespace}."\">$body_content</PowerOnVM_Task>".$self->{soap_footer};
+	
+
+}
+
+
+sub powerOffVM {
+	
+my $self, $id=shift
+	
+	 my $body_content= "<_this type='VirtualMachine'>$id</_this>";
+	 my $request_envelope=$self->{soap_header}."<PowerOffVM_Task xmlns=\"urn:".$self->{namespace}."\">$body_content</PowerOffVM_Task>".$self->{soap_footer};
+			
+	
+}
+
+
 sub getCurrentTime {
 	
-            my $self = shift;
+       my $self = shift;
   	    my $body_content= "<_this type='ServiceInstance'>ServiceInstance</_this>";
   	    my $request_envelope=$self->{soap_header}."<CurrentTime xmlns=\"urn:".$self->{namespace}."\">$body_content</CurrentTime>".$self->{soap_footer};
+
 	    my $xml=$self->_request($request_envelope);
-   	    my $val;  
-   	    if ($xml=~/^<\?xml/)
+   		my $val;  
+   		if ($xml=~/^<\?xml/)
    		  {
-		        my $xs = XML::Simple->new();
-		        my $return= $xs->XMLin($xml, ForceArray=>$self->{force_array},KeyAttr=>0);
-		        my $faultval;
-		        my $successval;
-        	if($self ->{force_array})
-           		{
+        my $xs = XML::Simple->new();
+        my $return= $xs->XMLin($xml, ForceArray=>$self->{force_array},KeyAttr=>0);
+        my $faultval;
+        my $successval;
+        if($self ->{force_array})
+           {
 	         $faultval=$return->{'soapenv:Body'}->[0]->{'soapenv:Fault'}; #fault
         
        		if($faultval)
@@ -353,6 +415,7 @@ sub getCurrentTime {
 		
 	
 }
+
 
 
 
@@ -426,15 +489,17 @@ sub byte_length {
 
 =head1 NAME
 
-Retrieve properties of a VMware ESX server
+Sample - a sample script indicating the format of a single-file
+script upload to CPAN
 
 =head1 DESCRIPTION
 
-Login to VMWare ESX server and discover Host properties and the Virtual Machines therein
+Login to VMWare ESX server and discover the Host and Virtual Machines therein
 
 =head1 README
 
-The ESX API uses SOAP to retrieve information and execute actions on an ESX server
+If there is any text in this section, it will be extracted into
+a separate README file.
 
 =head1 PREREQUISITES
 
@@ -447,8 +512,7 @@ any
 
 =pod SCRIPT CATEGORIES
 
-CPAN/Administrative
-
+CPAN/Administrative/Educational
 
 =cut
 
